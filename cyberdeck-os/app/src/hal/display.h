@@ -14,6 +14,7 @@ typedef struct Display {
     SDL_Renderer *renderer;
     SDL_Texture *target;
     TTF_Font *font;
+    bool use_target_texture;
     int window_width;
     int window_height;
     int font_size;

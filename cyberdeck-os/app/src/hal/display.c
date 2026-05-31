@@ -24,6 +24,72 @@ static TTF_Font *open_font(int size) {
     return NULL;
 }
 
+static bool format_was_tried(const Uint32 *formats, int count, Uint32 format) {
+    for (int i = 0; i < count; i++) {
+        if (formats[i] == format) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static SDL_Texture *create_render_target(SDL_Renderer *renderer) {
+    SDL_RendererInfo info;
+    if (SDL_GetRendererInfo(renderer, &info) != 0) {
+        fprintf(stderr, "SDL_GetRendererInfo failed: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    fprintf(stderr, "SDL renderer: %s\n", info.name ? info.name : "unknown");
+    if ((info.flags & SDL_RENDERER_TARGETTEXTURE) == 0) {
+        fprintf(stderr, "SDL renderer does not support target textures; using logical-size fallback.\n");
+        return NULL;
+    }
+
+    Uint32 tried[32];
+    int tried_count = 0;
+    for (Uint32 i = 0; i < info.num_texture_formats && tried_count < (int)(sizeof(tried) / sizeof(tried[0])); i++) {
+        Uint32 format = info.texture_formats[i];
+        fprintf(stderr, "Trying render target texture format: %s\n", SDL_GetPixelFormatName(format));
+        SDL_Texture *texture = SDL_CreateTexture(renderer,
+                                                 format,
+                                                 SDL_TEXTUREACCESS_TARGET,
+                                                 DISPLAY_VIRTUAL_WIDTH,
+                                                 DISPLAY_VIRTUAL_HEIGHT);
+        tried[tried_count++] = format;
+        if (texture) {
+            return texture;
+        }
+        fprintf(stderr, "Texture format failed: %s: %s\n", SDL_GetPixelFormatName(format), SDL_GetError());
+    }
+
+    const Uint32 fallback_formats[] = {
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_PIXELFORMAT_ABGR8888,
+        SDL_PIXELFORMAT_RGB888,
+        SDL_PIXELFORMAT_BGR888,
+        SDL_PIXELFORMAT_RGB565
+    };
+    for (size_t i = 0; i < sizeof(fallback_formats) / sizeof(fallback_formats[0]); i++) {
+        Uint32 format = fallback_formats[i];
+        if (format_was_tried(tried, tried_count, format)) {
+            continue;
+        }
+        fprintf(stderr, "Trying fallback render target texture format: %s\n", SDL_GetPixelFormatName(format));
+        SDL_Texture *texture = SDL_CreateTexture(renderer,
+                                                 format,
+                                                 SDL_TEXTUREACCESS_TARGET,
+                                                 DISPLAY_VIRTUAL_WIDTH,
+                                                 DISPLAY_VIRTUAL_HEIGHT);
+        if (texture) {
+            return texture;
+        }
+        fprintf(stderr, "Fallback texture format failed: %s: %s\n", SDL_GetPixelFormatName(format), SDL_GetError());
+    }
+
+    return NULL;
+}
+
 bool Display_Init(Display *display, const Config *config) {
     memset(display, 0, sizeof(*display));
     display->window_width = config->window_width;
@@ -40,6 +106,8 @@ bool Display_Init(Display *display, const Config *config) {
         SDL_Quit();
         return false;
     }
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
     Uint32 flags = SDL_WINDOW_SHOWN;
     if (display->fullscreen) {
@@ -68,15 +136,15 @@ bool Display_Init(Display *display, const Config *config) {
         return false;
     }
 
-    display->target = SDL_CreateTexture(display->renderer,
-                                        SDL_PIXELFORMAT_RGBA8888,
-                                        SDL_TEXTUREACCESS_TARGET,
-                                        DISPLAY_VIRTUAL_WIDTH,
-                                        DISPLAY_VIRTUAL_HEIGHT);
-    if (!display->target) {
-        fprintf(stderr, "SDL_CreateTexture failed: %s\n", SDL_GetError());
-        Display_Shutdown(display);
-        return false;
+    display->target = create_render_target(display->renderer);
+    display->use_target_texture = display->target != NULL;
+    if (!display->use_target_texture) {
+        fprintf(stderr, "Using direct logical-size rendering without an intermediate target texture.\n");
+        if (SDL_RenderSetLogicalSize(display->renderer, DISPLAY_VIRTUAL_WIDTH, DISPLAY_VIRTUAL_HEIGHT) != 0) {
+            fprintf(stderr, "SDL_RenderSetLogicalSize failed: %s\n", SDL_GetError());
+            Display_Shutdown(display);
+            return false;
+        }
     }
 
     display->font = open_font(display->font_size);
@@ -86,7 +154,6 @@ bool Display_Init(Display *display, const Config *config) {
         return false;
     }
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
     return true;
 }
 
@@ -100,12 +167,21 @@ void Display_Shutdown(Display *display) {
 }
 
 void Display_BeginFrame(Display *display) {
-    SDL_SetRenderTarget(display->renderer, display->target);
+    if (display->use_target_texture) {
+        SDL_SetRenderTarget(display->renderer, display->target);
+    } else {
+        SDL_SetRenderTarget(display->renderer, NULL);
+    }
     SDL_SetRenderDrawColor(display->renderer, 0, 0, 0, 255);
     SDL_RenderClear(display->renderer);
 }
 
 void Display_EndFrame(Display *display) {
+    if (!display->use_target_texture) {
+        SDL_RenderPresent(display->renderer);
+        return;
+    }
+
     SDL_SetRenderTarget(display->renderer, NULL);
     int win_w = 0;
     int win_h = 0;
