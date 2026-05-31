@@ -5,9 +5,19 @@ LOG=/tmp/bootsplash.log
 
 [ -c "$TTY" ] || exit 0
 
+boot_debug=false
+case "$(cat /proc/cmdline 2>/dev/null)" in
+  *busteg.debug=1*) boot_debug=true ;;
+esac
+
 chvt 1 2>/dev/null || true
-dmesg -n 1 2>/dev/null || true
-echo "0 0 0 0" > /proc/sys/kernel/printk 2>/dev/null || true
+if [ "$boot_debug" = true ]; then
+    dmesg -n 4 2>/dev/null || true
+    echo "4 4 1 7" > /proc/sys/kernel/printk 2>/dev/null || true
+else
+    dmesg -n 1 2>/dev/null || true
+    echo "0 0 0 0" > /proc/sys/kernel/printk 2>/dev/null || true
+fi
 printf '\033[?25l\033[2J\033[H' > "$TTY" 2>/dev/null || true
 
 attempt=0
@@ -17,7 +27,14 @@ while [ ! -e /dev/fb0 ] && [ "$attempt" -lt 3 ]; do
 done
 
 if [ -x /usr/bin/fb-splash ] && [ -e /dev/fb0 ] && [ -e /etc/cyberdeck/bootsplash.ppm ]; then
-    /usr/bin/fb-splash /etc/cyberdeck/bootsplash.ppm > "$LOG" 2>&1 && exit 0
+    if /usr/bin/fb-splash /etc/cyberdeck/bootsplash.ppm > "$LOG" 2>&1; then
+        if [ "$boot_debug" = true ]; then
+            {
+                printf '\033[27;2H\033[36mboot debug: framebuffer splash drawn, starting init...\033[0m'
+            } > "$TTY"
+        fi
+        exit 0
+    fi
 fi
 
 {

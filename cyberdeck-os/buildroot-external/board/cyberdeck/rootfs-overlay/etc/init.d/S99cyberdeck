@@ -1,5 +1,36 @@
 #!/bin/sh
 
+TTY=/dev/tty1
+
+boot_debug_enabled() {
+  case "$(cat /proc/cmdline 2>/dev/null)" in
+    *busteg.debug=1*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+show_debug_screen() {
+  {
+    printf '\033[?25l'
+    printf '\033[2J'
+    printf '\033[H'
+    printf '\033[36mBUSTEG OS BOOT DEBUG\033[0m\n'
+    printf 'ui did not visibly take over within 8 seconds\n\n'
+    printf 'cmdline: '
+    cat /proc/cmdline 2>/dev/null || true
+    printf '\n\nframebuffer devices:\n'
+    ls -l /dev/fb* 2>&1 || true
+    printf '\n\nbootsplash.log:\n'
+    tail -n 8 /tmp/bootsplash.log 2>&1 || true
+    printf '\n\nbootsplash-handoff.log:\n'
+    tail -n 8 /tmp/bootsplash-handoff.log 2>&1 || true
+    printf '\n\ncyberdeck-os.log:\n'
+    tail -n 16 /tmp/cyberdeck-os.log 2>&1 || true
+    printf '\n\ndmesg tail:\n'
+    dmesg 2>/dev/null | tail -n 16 || true
+  } > "$TTY"
+}
+
 case "$1" in
   start)
     export HOME=/root
@@ -9,9 +40,14 @@ case "$1" in
 
     # Ensure the framebuffer console is active so the UI is visible.
     chvt 1 2>/dev/null || true
-    dmesg -n 1 2>/dev/null || true
-    echo "0 0 0 0" > /proc/sys/kernel/printk 2>/dev/null || true
-    printf '\033[?25l' > /dev/tty1 2>/dev/null || true
+    if boot_debug_enabled; then
+      dmesg -n 4 2>/dev/null || true
+      echo "4 4 1 7" > /proc/sys/kernel/printk 2>/dev/null || true
+    else
+      dmesg -n 1 2>/dev/null || true
+      echo "0 0 0 0" > /proc/sys/kernel/printk 2>/dev/null || true
+    fi
+    printf '\033[?25l' > "$TTY" 2>/dev/null || true
 
     attempt=0
     while [ ! -e /dev/fb0 ] && [ "$attempt" -lt 3 ]; do
@@ -29,6 +65,18 @@ case "$1" in
       /usr/bin/cyberdeck-os > /tmp/cyberdeck-os.log 2>&1
       echo "cyberdeck-os exited with status $?" >> /tmp/cyberdeck-os.log
     ) &
+    app_pid=$!
+
+    if boot_debug_enabled; then
+      (
+        sleep 8
+        if kill -0 "$app_pid" 2>/dev/null; then
+          show_debug_screen
+        else
+          show_debug_screen
+        fi
+      ) &
+    fi
     ;;
 
   stop)
