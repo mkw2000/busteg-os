@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cyberdeck OS <cyberdeck@example.invalid>
+Date: Sun, 31 May 2026 08:56:00 +0000
+Subject: [PATCH] gnulib: undef glibc C23 generic macros before declarations
+
+glibc 2.43 exposes C23 const-generic macros for functions such as
+memchr, bsearch, and wmemchr. m4 1.4.20's bundled gnulib headers also
+add GCC 15/N3322 declarations for those names, so the glibc macros
+expand inside the declarations and break host builds.
+
+Undefine the conflicting macros immediately before the gnulib
+declarations. This keeps the patch local to host m4 and avoids requiring
+developers on rolling distributions to remember ad-hoc HOST_CFLAGS.
+---
+ lib/stdlib.in.h | 3 +++
+ lib/string.in.h | 4 ++++
+ lib/wchar.in.h  | 3 +++
+ 3 files changed, 10 insertions(+)
+
+diff --git a/lib/stdlib.in.h b/lib/stdlib.in.h
+index 1111111..2222222 100644
+--- a/lib/stdlib.in.h
++++ b/lib/stdlib.in.h
+@@ -236,6 +236,9 @@ _GL_WARN_EXTERN_C int mkstemp (char * /*template*/) _GL_ARG_NONNULL ((1));
+ 
+ /* Declarations for ISO C N3322.  */
+ #if defined __GNUC__ && __GNUC__ >= 15 && !defined __clang__
++# ifdef bsearch
++#  undef bsearch
++# endif
+ _GL_EXTERN_C void *bsearch (const void *__key,
+                             const void *__base, size_t __nmemb, size_t __size,
+                             int (*__compare) (const void *, const void *))
+diff --git a/lib/string.in.h b/lib/string.in.h
+index 3333333..4444444 100644
+--- a/lib/string.in.h
++++ b/lib/string.in.h
+@@ -213,6 +213,10 @@ _GL_WARN_ON_USE (free, "free cannot work correctly on native Windows - "
+ 
+ /* Declarations for ISO C N3322.  */
+ #if defined __GNUC__ && __GNUC__ >= 15 && !defined __clang__
++# ifdef memchr
++#  undef memchr
++# endif
++# undef memrchr
+ _GL_EXTERN_C void *memcpy (void *__dest, const void *__src, size_t __n)
+   _GL_ATTRIBUTE_NONNULL_IF_NONZERO (1, 3)
+   _GL_ATTRIBUTE_NONNULL_IF_NONZERO (2, 3);
+diff --git a/lib/wchar.in.h b/lib/wchar.in.h
+index 5555555..6666666 100644
+--- a/lib/wchar.in.h
++++ b/lib/wchar.in.h
+@@ -279,6 +279,9 @@ _GL_INLINE_HEADER_BEGIN
+ 
+ /* Declarations for ISO C N3322.  */
+ #if defined __GNUC__ && __GNUC__ >= 15 && !defined __clang__
++# ifdef wmemchr
++#  undef wmemchr
++# endif
+ _GL_EXTERN_C wchar_t *wmemcpy (wchar_t *__dest, const wchar_t *__src, size_t __n)
+   _GL_ATTRIBUTE_NONNULL_IF_NONZERO (1, 3)
+   _GL_ATTRIBUTE_NONNULL_IF_NONZERO (2, 3);
+-- 
+2.49.0

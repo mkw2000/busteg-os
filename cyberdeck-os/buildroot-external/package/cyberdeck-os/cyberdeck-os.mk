@@ -10,10 +10,12 @@ CYBERDECK_OS_SITE_METHOD = local
 CYBERDECK_OS_DEPENDENCIES = sdl2 sdl2_ttf dejavu
 
 define CYBERDECK_OS_BUILD_CMDS
-	$(TARGET_MAKE_ENV) $(MAKE) \
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) clean
+	$(TARGET_MAKE_ENV) \
+		CFLAGS="$(TARGET_CFLAGS) -std=c17 -Wall -Wextra -Wpedantic -O2" \
+		$(MAKE) \
 		CC="$(TARGET_CC)" \
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY) --define-prefix" \
-		CFLAGS="$(TARGET_CFLAGS) -std=c17 -Wall -Wextra -Wpedantic -O2" \
 		LDLIBS="`$(PKG_CONFIG_HOST_BINARY) --libs sdl2 SDL2_ttf`" \
 		-C $(@D)
 endef

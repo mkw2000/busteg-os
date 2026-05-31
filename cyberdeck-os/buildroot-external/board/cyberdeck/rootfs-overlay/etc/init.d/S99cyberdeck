@@ -6,10 +6,8 @@ case "$1" in
 
     export HOME=/root
     export SDL_NOMOUSE=0
-
-    # Try KMS/DRM first. If your Buildroot SDL2 config uses framebuffer instead,
-    # change this to the correct SDL video driver.
-    export SDL_VIDEODRIVER=kmsdrm
+    export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-RPI}"
+    export SDL_RENDER_DRIVER="${SDL_RENDER_DRIVER:-opengles2}"
 
     /usr/bin/cyberdeck-os &
     ;;

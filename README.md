@@ -119,7 +119,37 @@ accent=255,255,255
 
 ## Buildroot Guidance
 
-For a future Buildroot image, enable:
+This repository contains a Buildroot external tree, not Buildroot itself. Use it
+with a Buildroot checkout:
+
+```sh
+cd ~/Desktop
+git clone --depth 1 --branch 2025.05 https://gitlab.com/buildroot.org/buildroot.git buildroot
+cd ~/Desktop/busteg-os
+make pi-defconfig
+make pi-image
+```
+
+The expected flashable image is:
+
+```text
+../buildroot-output/images/sdcard.img
+```
+
+Flash it to the SD card device, replacing `/dev/sdX` with the real whole-device
+path from `lsblk`:
+
+```sh
+sudo dd if=../buildroot-output/images/sdcard.img of=/dev/sdX bs=4M conv=fsync status=progress
+```
+
+The defconfig is based on Buildroot's Raspberry Pi 1/B/B+ image flow and enables
+the Pi firmware, kernel, root filesystem, and `genimage` steps needed to produce
+`sdcard.img`. The repository Makefile also uses a clean build `PATH`, and the
+external tree carries host-package compatibility patches for newer rolling
+distributions.
+
+For Buildroot package configuration, enable:
 
 ```text
 Target packages -> Graphic libraries and applications -> SDL2

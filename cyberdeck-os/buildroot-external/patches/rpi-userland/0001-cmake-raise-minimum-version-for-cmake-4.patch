@@ -1,0 +1,84 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mkw <mkw@localhost>
+Date: Sun, 31 May 2026 08:55:00 +0000
+Subject: [PATCH] cmake: raise minimum version for CMake 4
+
+CMake 4 removed compatibility with projects that declare a minimum
+version older than 3.5. rpi-userland still builds with modern CMake when
+the declared minimum is raised to 3.5.
+
+Signed-off-by: mkw <mkw@localhost>
+---
+ CMakeLists.txt                                         | 2 +-
+ helpers/dtoverlay/CMakeLists.txt                       | 2 +-
+ host_applications/android/apps/vidtex/CMakeLists.txt   | 2 +-
+ host_applications/linux/apps/dtmerge/CMakeLists.txt    | 2 +-
+ host_applications/linux/apps/dtoverlay/CMakeLists.txt  | 2 +-
+ host_applications/linux/apps/gencmd/CMakeLists.txt     | 2 +-
+ host_applications/linux/apps/smem/CMakeLists.txt       | 2 +-
+ interface/vcos/CMakeLists.txt                          | 2 +-
+ middleware/openmaxil/CMakeLists.txt                    | 2 +-
+ 9 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 938a3ee..d9f2d62 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.5)
+diff --git a/helpers/dtoverlay/CMakeLists.txt b/helpers/dtoverlay/CMakeLists.txt
+--- a/helpers/dtoverlay/CMakeLists.txt
++++ b/helpers/dtoverlay/CMakeLists.txt
+@@ -9 +9 @@
+-cmake_minimum_required (VERSION 2.8)
++cmake_minimum_required (VERSION 3.5)
+diff --git a/host_applications/android/apps/vidtex/CMakeLists.txt b/host_applications/android/apps/vidtex/CMakeLists.txt
+index 6d66d69..7462e11 100644
+--- a/host_applications/android/apps/vidtex/CMakeLists.txt
++++ b/host_applications/android/apps/vidtex/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.5)
+diff --git a/host_applications/linux/apps/dtmerge/CMakeLists.txt b/host_applications/linux/apps/dtmerge/CMakeLists.txt
+index e65cf90..064ddf4 100644
+--- a/host_applications/linux/apps/dtmerge/CMakeLists.txt
++++ b/host_applications/linux/apps/dtmerge/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.5)
+diff --git a/host_applications/linux/apps/dtoverlay/CMakeLists.txt b/host_applications/linux/apps/dtoverlay/CMakeLists.txt
+index 25fcce4..cf867c8 100644
+--- a/host_applications/linux/apps/dtoverlay/CMakeLists.txt
++++ b/host_applications/linux/apps/dtoverlay/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.5)
+diff --git a/host_applications/linux/apps/gencmd/CMakeLists.txt b/host_applications/linux/apps/gencmd/CMakeLists.txt
+index f95d1a1..46aa27a 100644
+--- a/host_applications/linux/apps/gencmd/CMakeLists.txt
++++ b/host_applications/linux/apps/gencmd/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.5)
+diff --git a/host_applications/linux/apps/smem/CMakeLists.txt b/host_applications/linux/apps/smem/CMakeLists.txt
+index 0fa8328..ae3aa58 100644
+--- a/host_applications/linux/apps/smem/CMakeLists.txt
++++ b/host_applications/linux/apps/smem/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.5)
+diff --git a/interface/vcos/CMakeLists.txt b/interface/vcos/CMakeLists.txt
+--- a/interface/vcos/CMakeLists.txt
++++ b/interface/vcos/CMakeLists.txt
+@@ -1 +1 @@
+-cmake_minimum_required (VERSION 2.8)
++cmake_minimum_required (VERSION 3.5)
+diff --git a/middleware/openmaxil/CMakeLists.txt b/middleware/openmaxil/CMakeLists.txt
+--- a/middleware/openmaxil/CMakeLists.txt
++++ b/middleware/openmaxil/CMakeLists.txt
+@@ -9 +9 @@
+-cmake_minimum_required (VERSION 2.8)
++cmake_minimum_required (VERSION 3.5)
+-- 
+2.50.0
