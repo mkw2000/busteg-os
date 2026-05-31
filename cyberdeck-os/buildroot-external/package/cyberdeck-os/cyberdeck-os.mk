@@ -18,6 +18,8 @@ define CYBERDECK_OS_BUILD_CMDS
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY) --define-prefix" \
 		LDLIBS="`$(PKG_CONFIG_HOST_BINARY) --libs sdl2 SDL2_ttf`" \
 		-C $(@D)
+	$(TARGET_CC) $(TARGET_CFLAGS) -std=c17 -Wall -Wextra -Wpedantic -O2 \
+		$(@D)/tools/fb_splash.c -o $(@D)/build/fb-splash
 endef
 
 define CYBERDECK_OS_INSTALL_TARGET_CMDS
@@ -26,6 +28,12 @@ define CYBERDECK_OS_INSTALL_TARGET_CMDS
 
 	$(INSTALL) -D -m 0644 $(@D)/config.ini \
 		$(TARGET_DIR)/etc/cyberdeck/config.ini
+
+	$(INSTALL) -D -m 0644 $(BR2_EXTERNAL_CYBERDECK_PATH)/board/cyberdeck/assets/bootsplash.ppm \
+		$(TARGET_DIR)/etc/cyberdeck/bootsplash.ppm
+
+	$(INSTALL) -D -m 0755 $(@D)/build/fb-splash \
+		$(TARGET_DIR)/usr/bin/fb-splash
 
 	$(INSTALL) -D -m 0755 $(@D)/scripts/detect_usb.sh \
 		$(TARGET_DIR)/usr/bin/detect_usb.sh

@@ -2,22 +2,21 @@
 
 case "$1" in
   start)
-    echo "Starting Cyberdeck OS"
-
     export HOME=/root
     export SDL_NOMOUSE=0
     export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-RPI}"
     export SDL_RENDER_DRIVER="${SDL_RENDER_DRIVER:-opengles2}"
 
-    # Ensure the framebuffer console is active so the UI is visible
+    # Ensure the framebuffer console is active so the UI is visible.
     chvt 1 2>/dev/null || true
+    printf '\033[?25l' > /dev/tty1 2>/dev/null || true
 
-    # Run the application in the background so init is not blocked
-    /usr/bin/cyberdeck-os > /dev/null 2>&1 &
+    # Run the application in the background so init is not blocked.
+    cd /etc/cyberdeck || true
+    /usr/bin/cyberdeck-os > /tmp/cyberdeck-os.log 2>&1 &
     ;;
 
   stop)
-    echo "Stopping Cyberdeck OS"
     killall cyberdeck-os 2>/dev/null || true
     ;;
 

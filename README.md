@@ -149,6 +149,23 @@ the Pi firmware, kernel, root filesystem, and `genimage` steps needed to produce
 external tree carries host-package compatibility patches for newer rolling
 distributions.
 
+The image is configured as an appliance boot rather than a general-purpose Linux
+login. The Pi firmware rainbow screen, cursor, virtual-console gettys, and
+normal init-script output are suppressed. During the Linux build, the external
+tree replaces the default framebuffer logo with a kernel-compatible PPM derived
+from `board/cyberdeck/assets/bustegblack.png` via
+`board/cyberdeck/generate-kernel-logo.sh` and keeps the required kernel logo
+options enabled with `board/cyberdeck/linux.fragment`. A small `S00bootsplash`
+script then uses `/usr/bin/fb-splash` to draw the matching boot splash while
+`/usr/bin/cyberdeck-os` starts fullscreen from `/etc/cyberdeck`.
+
+A true Plymouth-style animated boot would require a fuller userspace stack than
+this BusyBox appliance image currently carries. The lightweight equivalent here
+is: custom kernel logo, quiet boot, earliest init-script splash, and direct
+fullscreen launch into the OS UI. If a later build moves to an initramfs handoff,
+keep the same quiet kernel arguments and run the splash before mounting and
+switching to the real root filesystem.
+
 For Buildroot package configuration, enable:
 
 ```text

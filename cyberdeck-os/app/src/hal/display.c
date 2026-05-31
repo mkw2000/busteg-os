@@ -46,7 +46,7 @@ bool Display_Init(Display *display, const Config *config) {
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
 
-    display->window = SDL_CreateWindow("PI CYBERDECK",
+    display->window = SDL_CreateWindow("BUSTEG OS",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
                                        display->window_width,

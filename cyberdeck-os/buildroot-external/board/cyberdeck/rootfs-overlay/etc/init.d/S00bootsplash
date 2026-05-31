@@ -1,0 +1,24 @@
+#!/bin/sh
+
+TTY=/dev/tty1
+
+[ -c "$TTY" ] || exit 0
+
+if [ -x /usr/bin/fb-splash ] && [ -e /dev/fb0 ] && [ -e /etc/cyberdeck/bootsplash.ppm ]; then
+    /usr/bin/fb-splash /etc/cyberdeck/bootsplash.ppm >/dev/null 2>&1 && exit 0
+fi
+
+{
+    printf '\033[?25l'
+    printf '\033[2J'
+    printf '\033[H'
+    printf '\033[32m'
+    printf '\033[7;18HBUSTEG OS'
+    printf '\033[9;14Hcustom appliance shell'
+    printf '\033[12;12H[                    ]'
+    printf '\033[12;13H####################'
+    printf '\033[15;16Hinitializing hardware'
+    printf '\033[0m'
+} > "$TTY"
+
+exit 0

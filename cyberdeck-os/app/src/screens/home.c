@@ -28,7 +28,7 @@ void Home_Render(ScreenManager *manager, App *app) {
     }
     items[app->modules.count] = "Exit";
 
-    Renderer_Frame(&app->display, "PI CYBERDECK", app->config.primary, app->config.secondary);
+    Renderer_Frame(&app->display, "BUSTEG OS", app->config.primary, app->config.secondary);
     Menu_Render(&app->display, items, app->modules.count + 1, manager->selected_menu, app->config.primary, app->config.secondary, app->config.accent);
     Display_DrawText(&app->display, "UP/DOWN select  ENTER open  ESC back  Q quit", 36, 288, app->config.secondary);
 }
