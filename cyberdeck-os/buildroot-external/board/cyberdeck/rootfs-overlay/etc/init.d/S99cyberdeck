@@ -9,11 +9,26 @@ case "$1" in
 
     # Ensure the framebuffer console is active so the UI is visible.
     chvt 1 2>/dev/null || true
+    dmesg -n 1 2>/dev/null || true
+    echo "0 0 0 0" > /proc/sys/kernel/printk 2>/dev/null || true
     printf '\033[?25l' > /dev/tty1 2>/dev/null || true
 
+    attempt=0
+    while [ ! -e /dev/fb0 ] && [ "$attempt" -lt 3 ]; do
+      sleep 1
+      attempt=$((attempt + 1))
+    done
+
+    if [ -x /usr/bin/fb-splash ] && [ -e /dev/fb0 ] && [ -e /etc/cyberdeck/bootsplash.ppm ]; then
+      /usr/bin/fb-splash /etc/cyberdeck/bootsplash.ppm >/tmp/bootsplash-handoff.log 2>&1 || true
+    fi
+
     # Run the application in the background so init is not blocked.
-    cd /etc/cyberdeck || true
-    /usr/bin/cyberdeck-os > /tmp/cyberdeck-os.log 2>&1 &
+    (
+      cd /etc/cyberdeck || exit 1
+      /usr/bin/cyberdeck-os > /tmp/cyberdeck-os.log 2>&1
+      echo "cyberdeck-os exited with status $?" >> /tmp/cyberdeck-os.log
+    ) &
     ;;
 
   stop)

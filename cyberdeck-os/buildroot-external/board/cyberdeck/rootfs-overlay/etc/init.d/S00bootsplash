@@ -1,12 +1,31 @@
 #!/bin/sh
 
 TTY=/dev/tty1
+LOG=/tmp/bootsplash.log
 
 [ -c "$TTY" ] || exit 0
 
+chvt 1 2>/dev/null || true
+dmesg -n 1 2>/dev/null || true
+echo "0 0 0 0" > /proc/sys/kernel/printk 2>/dev/null || true
+printf '\033[?25l\033[2J\033[H' > "$TTY" 2>/dev/null || true
+
+attempt=0
+while [ ! -e /dev/fb0 ] && [ "$attempt" -lt 3 ]; do
+    sleep 1
+    attempt=$((attempt + 1))
+done
+
 if [ -x /usr/bin/fb-splash ] && [ -e /dev/fb0 ] && [ -e /etc/cyberdeck/bootsplash.ppm ]; then
-    /usr/bin/fb-splash /etc/cyberdeck/bootsplash.ppm >/dev/null 2>&1 && exit 0
+    /usr/bin/fb-splash /etc/cyberdeck/bootsplash.ppm > "$LOG" 2>&1 && exit 0
 fi
+
+{
+    echo "fb-splash fallback"
+    [ -x /usr/bin/fb-splash ] || echo "missing /usr/bin/fb-splash"
+    [ -e /dev/fb0 ] || echo "missing /dev/fb0"
+    [ -e /etc/cyberdeck/bootsplash.ppm ] || echo "missing /etc/cyberdeck/bootsplash.ppm"
+} > "$LOG"
 
 {
     printf '\033[?25l'

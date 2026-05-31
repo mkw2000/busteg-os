@@ -161,10 +161,21 @@ script then uses `/usr/bin/fb-splash` to draw the matching boot splash while
 
 A true Plymouth-style animated boot would require a fuller userspace stack than
 this BusyBox appliance image currently carries. The lightweight equivalent here
-is: custom kernel logo, quiet boot, earliest init-script splash, and direct
-fullscreen launch into the OS UI. If a later build moves to an initramfs handoff,
-keep the same quiet kernel arguments and run the splash before mounting and
-switching to the real root filesystem.
+is: `logo.nologo` to suppress the Raspberry Pi kernel logos, quiet boot,
+earliest init-script framebuffer splash, and direct fullscreen launch into the
+OS UI. If a later build moves to an initramfs handoff, keep the same quiet
+kernel arguments and run the splash before mounting and switching to the real
+root filesystem.
+
+When changing boot assets or package install rules, force Buildroot to rebuild
+the boot-sensitive packages before making the image:
+
+```sh
+make pi-boot-image
+```
+
+On the target, `/tmp/bootsplash.log` records why the bitmap splash fell back to
+text, and `/tmp/cyberdeck-os.log` records SDL/app launch failures.
 
 For Buildroot package configuration, enable:
 
