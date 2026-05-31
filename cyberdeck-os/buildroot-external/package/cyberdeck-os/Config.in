@@ -1,0 +1,7 @@
+config BR2_PACKAGE_CYBERDECK_OS
+	bool "cyberdeck-os"
+	select BR2_PACKAGE_SDL2
+	select BR2_PACKAGE_SDL2_TTF
+	select BR2_PACKAGE_DEJAVU
+	help
+	  Cyberdeck OS SDL2 user interface.

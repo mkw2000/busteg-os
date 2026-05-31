@@ -1,0 +1,33 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+    echo "Starting Cyberdeck OS"
+
+    export HOME=/root
+    export SDL_NOMOUSE=0
+
+    # Try KMS/DRM first. If your Buildroot SDL2 config uses framebuffer instead,
+    # change this to the correct SDL video driver.
+    export SDL_VIDEODRIVER=kmsdrm
+
+    /usr/bin/cyberdeck-os &
+    ;;
+
+  stop)
+    echo "Stopping Cyberdeck OS"
+    killall cyberdeck-os 2>/dev/null || true
+    ;;
+
+  restart)
+    "$0" stop
+    "$0" start
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+
+exit 0
