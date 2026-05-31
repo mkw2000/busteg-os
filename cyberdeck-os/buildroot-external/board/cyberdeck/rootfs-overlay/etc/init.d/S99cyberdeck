@@ -9,7 +9,11 @@ case "$1" in
     export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-RPI}"
     export SDL_RENDER_DRIVER="${SDL_RENDER_DRIVER:-opengles2}"
 
-    /usr/bin/cyberdeck-os &
+    # Ensure the framebuffer console is active so the UI is visible
+    chvt 1 2>/dev/null || true
+
+    # Run the application in the background so init is not blocked
+    /usr/bin/cyberdeck-os > /dev/null 2>&1 &
     ;;
 
   stop)
