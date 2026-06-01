@@ -1,9 +1,11 @@
 #define _DEFAULT_SOURCE
 #include "hal/system.h"
 #include <dirent.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
 
@@ -18,6 +20,33 @@ static void read_first_line(const char *path, char *out, size_t size, const char
     }
     out[strcspn(out, "\r\n")] = '\0';
     fclose(file);
+}
+
+static void read_driver_name(const char *device_name, char *out, size_t size) {
+    char driver_path[224];
+    char link_target[224];
+    ssize_t length = 0;
+
+    snprintf(driver_path, sizeof(driver_path), "/sys/bus/usb/devices/%s/driver", device_name);
+    length = readlink(driver_path, link_target, sizeof(link_target) - 1);
+    if (length < 0) {
+        snprintf(out, size, "none");
+        return;
+    }
+
+    link_target[length] = '\0';
+    char *name = strrchr(link_target, '/');
+    snprintf(out, size, "%s", name ? name + 1 : link_target);
+}
+
+static bool usb_device_has_product_file(const char *device_name) {
+    char path[192];
+    snprintf(path, sizeof(path), "/sys/bus/usb/devices/%s/product", device_name);
+    return access(path, R_OK) == 0;
+}
+
+static bool usb_device_is_interface(const char *device_name) {
+    return strchr(device_name, ':') != NULL;
 }
 
 void System_ReadInfo(SystemInfo *info) {
@@ -101,26 +130,98 @@ int System_ListUsb(char lines[][96], int max_lines) {
     while ((entry = readdir(dir)) != NULL && count < max_lines) {
         char product_path[192];
         char vendor_path[192];
+        char product_id_path[192];
         char product[64];
         char vendor[16];
+        char product_id[16];
 
         if (entry->d_name[0] == '.') {
+            continue;
+        }
+        if (usb_device_is_interface(entry->d_name) || !usb_device_has_product_file(entry->d_name)) {
             continue;
         }
 
         snprintf(product_path, sizeof(product_path), "/sys/bus/usb/devices/%s/product", entry->d_name);
         snprintf(vendor_path, sizeof(vendor_path), "/sys/bus/usb/devices/%s/idVendor", entry->d_name);
+        snprintf(product_id_path, sizeof(product_id_path), "/sys/bus/usb/devices/%s/idProduct", entry->d_name);
         read_first_line(product_path, product, sizeof(product), "");
         read_first_line(vendor_path, vendor, sizeof(vendor), "");
+        read_first_line(product_id_path, product_id, sizeof(product_id), "");
 
         if (product[0]) {
-            snprintf(lines[count++], 96, "%s vendor=%s", product, vendor[0] ? vendor : "?");
+            snprintf(lines[count++], 96, "%s %s:%s", product, vendor[0] ? vendor : "?", product_id[0] ? product_id : "?");
         }
     }
     closedir(dir);
+
+    dir = opendir("/sys/bus/usb/devices");
+    while (dir && (entry = readdir(dir)) != NULL && count < max_lines) {
+        char class_path[192];
+        char subclass_path[192];
+        char protocol_path[192];
+        char driver[48];
+        char class_code[16];
+        char subclass[16];
+        char protocol[16];
+
+        if (!usb_device_is_interface(entry->d_name)) {
+            continue;
+        }
+
+        snprintf(class_path, sizeof(class_path), "/sys/bus/usb/devices/%s/bInterfaceClass", entry->d_name);
+        snprintf(subclass_path, sizeof(subclass_path), "/sys/bus/usb/devices/%s/bInterfaceSubClass", entry->d_name);
+        snprintf(protocol_path, sizeof(protocol_path), "/sys/bus/usb/devices/%s/bInterfaceProtocol", entry->d_name);
+        read_first_line(class_path, class_code, sizeof(class_code), "?");
+        read_first_line(subclass_path, subclass, sizeof(subclass), "?");
+        read_first_line(protocol_path, protocol, sizeof(protocol), "?");
+        read_driver_name(entry->d_name, driver, sizeof(driver));
+
+        snprintf(lines[count++], 96, "if %s class=%s/%s/%s driver=%s", entry->d_name, class_code, subclass, protocol, driver);
+    }
+    if (dir) {
+        closedir(dir);
+    }
 
     if (count == 0) {
         snprintf(lines[count++], 96, "No USB products listed in sysfs");
     }
     return count;
+}
+
+bool System_FindUsbId(const char *vendor_id, const char *product_id, char *label, size_t label_size) {
+    DIR *dir = opendir("/sys/bus/usb/devices");
+    if (!dir) {
+        return false;
+    }
+
+    struct dirent *entry = NULL;
+    while ((entry = readdir(dir)) != NULL) {
+        char vendor_path[192];
+        char product_id_path[192];
+        char product_path[192];
+        char vendor[16];
+        char product[16];
+        char name[64];
+
+        if (entry->d_name[0] == '.' || usb_device_is_interface(entry->d_name)) {
+            continue;
+        }
+
+        snprintf(vendor_path, sizeof(vendor_path), "/sys/bus/usb/devices/%s/idVendor", entry->d_name);
+        snprintf(product_id_path, sizeof(product_id_path), "/sys/bus/usb/devices/%s/idProduct", entry->d_name);
+        snprintf(product_path, sizeof(product_path), "/sys/bus/usb/devices/%s/product", entry->d_name);
+        read_first_line(vendor_path, vendor, sizeof(vendor), "");
+        read_first_line(product_id_path, product, sizeof(product), "");
+
+        if (strcmp(vendor, vendor_id) == 0 && strcmp(product, product_id) == 0) {
+            read_first_line(product_path, name, sizeof(name), "USB device");
+            snprintf(label, label_size, "%s %s:%s", name, vendor, product);
+            closedir(dir);
+            return true;
+        }
+    }
+
+    closedir(dir);
+    return false;
 }

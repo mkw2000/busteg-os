@@ -4,7 +4,7 @@ BR2_EXTERNAL := $(CURDIR)/cyberdeck-os/buildroot-external
 BUILDROOT_OUTPUT_ABS := $(abspath $(BUILDROOT_OUTPUT))
 BUILDROOT_ENV := env -i HOME="$(HOME)" USER="$(USER)" LOGNAME="$(LOGNAME)" TERM="$(TERM)" SHELL="$(SHELL)" PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-.PHONY: help app app-run app-clean pi-defconfig pi-image pi-host-m4-clean pi-rpi-userland-clean pi-rpi-firmware-clean pi-linux-clean pi-app-clean pi-boot-clean pi-boot-image
+.PHONY: help app app-run app-clean pi-defconfig pi-image pi-fast-image pi-firmware-image pi-kernel-image pi-host-m4-clean pi-rpi-userland-clean pi-rpi-firmware-clean pi-linux-clean pi-app-clean pi-boot-clean pi-boot-image
 
 help:
 	@echo "Targets:"
@@ -13,6 +13,9 @@ help:
 	@echo "  app-clean        Clean the local desktop app"
 	@echo "  pi-defconfig     Configure Buildroot for Raspberry Pi B+"
 	@echo "  pi-image         Build the Raspberry Pi SD card image"
+	@echo "  pi-fast-image    Rebuild only the local app package and image"
+	@echo "  pi-firmware-image Rebuild firmware/cmdline plus app and image"
+	@echo "  pi-kernel-image  Rebuild Linux plus app and image"
 	@echo "  pi-host-m4-clean Clean Buildroot's failed host-m4 build"
 	@echo "  pi-rpi-userland-clean Clean Buildroot's failed rpi-userland build"
 	@echo "  pi-rpi-firmware-clean Clean Raspberry Pi firmware/cmdline build artifacts"
@@ -43,6 +46,12 @@ pi-defconfig:
 pi-image:
 	$(BUILDROOT_ENV) $(MAKE) -C "$(BUILDROOT_DIR)" \
 		O="$(BUILDROOT_OUTPUT_ABS)"
+
+pi-fast-image: pi-app-clean pi-image
+
+pi-firmware-image: pi-rpi-firmware-clean pi-app-clean pi-image
+
+pi-kernel-image: pi-linux-clean pi-app-clean pi-image
 
 pi-host-m4-clean:
 	$(BUILDROOT_ENV) $(MAKE) -C "$(BUILDROOT_DIR)" \

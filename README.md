@@ -170,12 +170,24 @@ OS UI. If a later build moves to an initramfs handoff, keep the same quiet
 kernel arguments and run the splash before mounting and switching to the real
 root filesystem.
 
-When changing boot assets or package install rules, force Buildroot to rebuild
-the boot-sensitive packages before making the image:
+For normal C app/UI/module changes, use the faster rebuild path:
 
 ```sh
-make pi-boot-image
+make pi-fast-image
 ```
+
+Only use the slower boot-sensitive rebuilds when the changed files require it:
+
+```text
+make pi-fast-image      app C code, modules, config installed by cyberdeck-os
+make pi-firmware-image  boot cmdline/config.txt or Pi firmware files
+make pi-kernel-image    linux.fragment or kernel driver/config changes
+make pi-boot-image      firmware + kernel + app when in doubt
+```
+
+`make pi-boot-image` is intentionally slow because it cleans and rebuilds the
+kernel. Avoid it for game/UI tweaks like the Snake module.
+
 
 On the target, `/tmp/bootsplash.log` records why the bitmap splash fell back to
 text, and `/tmp/cyberdeck-os.log` records SDL/app launch failures.
