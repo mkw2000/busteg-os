@@ -4,6 +4,7 @@
 #include "modules/module_rfcat.h"
 #include "modules/module_rfnano.h"
 #include "modules/module_settings.h"
+#include "modules/module_snake.h"
 #include "modules/module_system.h"
 #include "modules/module_touchtest.h"
 
@@ -18,6 +19,7 @@ static void register_modules(App *app) {
     ModuleManager_Add(&app->modules, Module_System_Create());
     ModuleManager_Add(&app->modules, Module_Rfcat_Create());
     ModuleManager_Add(&app->modules, Module_RfNano_Create());
+    ModuleManager_Add(&app->modules, Module_Snake_Create());
     ModuleManager_Add(&app->modules, Module_TouchTest_Create());
     ModuleManager_Add(&app->modules, Module_Settings_Create());
 }

@@ -76,6 +76,7 @@ tools/         helper programs used in the Pi image
 - Change menu modules in `register_modules()` inside `src/core/app.c`.
 - Change colors in `config.ini`.
 - Add labels to `src/modules/module_settings.c`.
+- Tweak the Snake board speed/size constants in `src/modules/module_snake.c`.
 - Make a new read-only module that draws text with `Display_DrawText`.
 
 ## Files To Treat Carefully
