@@ -4,6 +4,7 @@
 #include "hal/system.h"
 #include "ui/renderer.h"
 #include <stdio.h>
+#include <string.h>
 
 typedef struct RfcatData {
     SerialDevice serial[8];
@@ -18,6 +19,17 @@ static RfcatData data;
 static void refresh(RfcatData *state) {
     state->serial_count = Serial_ListDevices(state->serial, 8);
     state->usb_count = System_ListUsb(state->usb_lines, 8);
+}
+
+static const char *status_text(const RfcatData *state) {
+    if (state->serial_count > 0) {
+        return "serial device present";
+    }
+    if (state->usb_count > 0 && strncmp(state->usb_lines[0], "No USB", 6) != 0 &&
+        strncmp(state->usb_lines[0], "USB inventory unavailable", 25) != 0) {
+        return "USB seen; no ttyUSB/ttyACM";
+    }
+    return "not detected";
 }
 
 static bool rfcat_init(Module *module, App *app) {
@@ -42,7 +54,7 @@ static void rfcat_render(Module *module, App *app) {
     RfcatData *state = module->data;
     char line[96];
     Renderer_Frame(&app->display, "RFCAT CC1111", app->config.primary, app->config.secondary);
-    snprintf(line, sizeof(line), "%s", state->serial_count > 0 ? "possible serial device present" : "not detected");
+    snprintf(line, sizeof(line), "%s", status_text(state));
     Renderer_LabelValue(&app->display, 20, 54, "status", line, app->config.secondary, app->config.accent);
     for (int i = 0; i < state->serial_count && i < 4; ++i) {
         snprintf(line, sizeof(line), "serial %d", i);

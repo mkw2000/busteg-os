@@ -10,6 +10,11 @@
 #include <unistd.h>
 #include "hal/display.h"
 
+/*
+ * The rest of the app only understands NavEvent values such as NAV_UP and
+ * NAV_SELECT. These mapping functions are the adapter from real keyboards to
+ * that tiny app vocabulary.
+ */
 static void push_sdl_key(EventSystem *events, SDL_Keycode key) {
     NavEvent event = {NAV_NONE, 0, 0, false};
     switch (key) {
@@ -34,6 +39,11 @@ static void push_sdl_key(EventSystem *events, SDL_Keycode key) {
 }
 
 #ifdef __linux__
+/*
+ * On Raspberry Pi SDL's RPI video backend can render successfully while not
+ * delivering keyboard events. Reading /dev/input/event* keeps USB keyboards
+ * working without making the rest of the app care where input came from.
+ */
 static void push_evdev_key(EventSystem *events, unsigned short key) {
     NavEvent event = {NAV_NONE, 0, 0, false};
     switch (key) {

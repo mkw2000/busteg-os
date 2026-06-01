@@ -1,5 +1,6 @@
 #define _DEFAULT_SOURCE
 #include "hal/system.h"
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,17 +75,52 @@ void System_ReadInfo(SystemInfo *info) {
 int System_ListUsb(char lines[][96], int max_lines) {
     FILE *file = fopen("/sys/kernel/debug/usb/devices", "r");
     int count = 0;
-    if (!file) {
+    if (file) {
+        char line[160];
+        while (fgets(line, sizeof(line), file) && count < max_lines) {
+            if (strncmp(line, "P:", 2) == 0 || strncmp(line, "S:  Product", 11) == 0) {
+                line[strcspn(line, "\r\n")] = '\0';
+                snprintf(lines[count++], 96, "%s", line);
+            }
+        }
+        fclose(file);
+        return count;
+    }
+
+    /*
+     * debugfs is often not mounted on a stripped-down appliance image. The
+     * sysfs USB tree is still available and works for hot-plug diagnostics.
+     */
+    DIR *dir = opendir("/sys/bus/usb/devices");
+    if (!dir) {
         snprintf(lines[count++], 96, "USB inventory unavailable");
         return count;
     }
-    char line[160];
-    while (fgets(line, sizeof(line), file) && count < max_lines) {
-        if (strncmp(line, "P:", 2) == 0 || strncmp(line, "S:  Product", 11) == 0) {
-            line[strcspn(line, "\r\n")] = '\0';
-            snprintf(lines[count++], 96, "%s", line);
+
+    struct dirent *entry = NULL;
+    while ((entry = readdir(dir)) != NULL && count < max_lines) {
+        char product_path[192];
+        char vendor_path[192];
+        char product[64];
+        char vendor[16];
+
+        if (entry->d_name[0] == '.') {
+            continue;
+        }
+
+        snprintf(product_path, sizeof(product_path), "/sys/bus/usb/devices/%s/product", entry->d_name);
+        snprintf(vendor_path, sizeof(vendor_path), "/sys/bus/usb/devices/%s/idVendor", entry->d_name);
+        read_first_line(product_path, product, sizeof(product), "");
+        read_first_line(vendor_path, vendor, sizeof(vendor), "");
+
+        if (product[0]) {
+            snprintf(lines[count++], 96, "%s vendor=%s", product, vendor[0] ? vendor : "?");
         }
     }
-    fclose(file);
+    closedir(dir);
+
+    if (count == 0) {
+        snprintf(lines[count++], 96, "No USB products listed in sysfs");
+    }
     return count;
 }

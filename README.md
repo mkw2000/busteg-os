@@ -4,6 +4,9 @@ Lightweight C17/SDL2 foundation for a custom Raspberry Pi cyberdeck appliance UI
 
 This project intentionally does not implement RF attacks, replay, jamming, credential capture, unauthorized interception, exploitation, or attack automation. RFcat and RF-NANO screens are inventory and status views only.
 
+For a beginner-friendly walkthrough of the C app, start with
+[`cyberdeck-os/app/CODE_TOUR.md`](cyberdeck-os/app/CODE_TOUR.md).
+
 ## Architecture
 
 ```text

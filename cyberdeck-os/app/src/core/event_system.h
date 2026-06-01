@@ -22,8 +22,10 @@ typedef struct NavEvent {
     bool pressed;
 } NavEvent;
 
+#define EVENT_QUEUE_CAPACITY 32
+
 typedef struct EventSystem {
-    NavEvent queue[32];
+    NavEvent queue[EVENT_QUEUE_CAPACITY];
     int head;
     int tail;
 } EventSystem;

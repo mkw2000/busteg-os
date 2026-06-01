@@ -46,6 +46,10 @@ static SDL_Texture *create_render_target(SDL_Renderer *renderer) {
         return NULL;
     }
 
+    /*
+     * The desktop SDL renderer accepts RGBA8888, but the Raspberry Pi renderer
+     * may only accept a smaller list. Ask SDL which formats it supports first.
+     */
     Uint32 tried[32];
     int tried_count = 0;
     for (Uint32 i = 0; i < info.num_texture_formats && tried_count < (int)(sizeof(tried) / sizeof(tried[0])); i++) {
@@ -140,6 +144,10 @@ bool Display_Init(Display *display, const Config *config) {
     display->target = create_render_target(display->renderer);
     display->use_target_texture = display->target != NULL;
     if (!display->use_target_texture) {
+        /*
+         * Fallback path: draw straight to the window at 480x320 logical pixels.
+         * SDL scales that logical canvas to the real screen for us.
+         */
         fprintf(stderr, "Using direct logical-size rendering without an intermediate target texture.\n");
         if (SDL_RenderSetLogicalSize(display->renderer, DISPLAY_VIRTUAL_WIDTH, DISPLAY_VIRTUAL_HEIGHT) != 0) {
             fprintf(stderr, "SDL_RenderSetLogicalSize failed: %s\n", SDL_GetError());

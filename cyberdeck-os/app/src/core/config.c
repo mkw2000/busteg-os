@@ -19,6 +19,10 @@ static Color parse_color(const char *value, Color fallback) {
 }
 
 void Config_Default(Config *config) {
+    /*
+     * These defaults are used when config.ini is missing or only contains a few
+     * settings. Keep them boring and safe so the app can boot on a new system.
+     */
     config->fullscreen = false;
     config->window_width = 800;
     config->window_height = 480;
@@ -39,6 +43,11 @@ bool Config_Load(Config *config, const char *path) {
 
     char line[192];
     while (fgets(line, sizeof(line), file)) {
+        /*
+         * This is intentionally a tiny config parser:
+         *   key=value
+         * Section names like [display] are ignored.
+         */
         char *eq = strchr(line, '=');
         if (!eq || line[0] == '[' || line[0] == '#') {
             continue;

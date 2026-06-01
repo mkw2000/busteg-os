@@ -6,6 +6,14 @@
 
 struct App;
 
+#define MODULE_MANAGER_MAX_MODULES 8
+
+/*
+ * A Module is one app screen/tool.
+ *
+ * Only render() is required. The other function pointers can be NULL when a
+ * module does not need setup, per-frame updates, input handling, or cleanup.
+ */
 typedef struct Module {
     const char *name;
     bool (*init)(struct Module *module, struct App *app);
@@ -17,7 +25,7 @@ typedef struct Module {
 } Module;
 
 typedef struct ModuleManager {
-    Module modules[8];
+    Module modules[MODULE_MANAGER_MAX_MODULES];
     int count;
 } ModuleManager;
 

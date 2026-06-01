@@ -3,8 +3,10 @@
 #include "ui/menu.h"
 #include "ui/renderer.h"
 
+#define HOME_EXTRA_ITEMS 1
+
 void Home_HandleEvent(ScreenManager *manager, App *app, NavEvent event) {
-    int item_count = app->modules.count + 1;
+    int item_count = app->modules.count + HOME_EXTRA_ITEMS;
     if (event.type == NAV_UP) {
         manager->selected_menu = (manager->selected_menu + item_count - 1) % item_count;
     } else if (event.type == NAV_DOWN) {
@@ -22,7 +24,7 @@ void Home_HandleEvent(ScreenManager *manager, App *app, NavEvent event) {
 }
 
 void Home_Render(ScreenManager *manager, App *app) {
-    const char *items[9];
+    const char *items[MODULE_MANAGER_MAX_MODULES + HOME_EXTRA_ITEMS];
     for (int i = 0; i < app->modules.count; ++i) {
         items[i] = app->modules.modules[i].name;
     }
