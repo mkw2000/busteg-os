@@ -129,23 +129,7 @@ static void stop_scan() {
 
 static void handle_command(char *cmd) {
   if (strcmp(cmd, "PING") == 0) {
-    
-104105106107108109110111112113114115116117118119120121122123124125126
-  if (strcmp(cmd, "PING") == 0) {
     Serial.println(F("OK RFNANO_BRIDGE 1"));
-    return;
-  }
-
-  if (strcmp(cmd, "STATUS") == 0) {
-    Serial.print(F("OK STATUS CH "));
-    Serial.print(channel);
-    Serial.print(F(" ADDR "));
-    Serial.write(address, 5);
-
-Sketch uses 6274 bytes (20%) of program storage space. Maximum is 30720 bytes.
-Global variables use 526 bytes (25%) of dynamic memory, leaving 1522 bytes for local variables. Maximum is 2048 bytes.
-
-Serial.println(F("OK RFNANO_BRIDGE 1"));
     return;
   }
 
