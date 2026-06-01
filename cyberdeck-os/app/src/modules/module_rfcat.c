@@ -32,11 +32,7 @@ static const char *status_text(const RfcatData *state) {
     if (state->serial_count > 0) {
         return "serial device present";
     }
-    if (state->usb_count > 0 && strncmp(state->usb_lines[0], "No USB", 6) != 0 &&
-        strncmp(state->usb_lines[0], "USB inventory unavailable", 25) != 0) {
-        return "USB seen; no ttyUSB/ttyACM";
-    }
-    return "not detected";
+    return "RFcat not detected";
 }
 
 static bool rfcat_init(Module *module, App *app) {
@@ -71,11 +67,11 @@ static void rfcat_render(Module *module, App *app) {
         snprintf(line, sizeof(line), "serial %d", i);
         Renderer_LabelValue(&app->display, 20, 84 + i * 24, line, state->serial[i].path, app->config.secondary, app->config.accent);
     }
-    Display_DrawText(&app->display, "USB inventory", 20, 190, app->config.primary);
-    for (int i = 0; i < state->usb_count && i < 3; ++i) {
-        Display_DrawText(&app->display, state->usb_lines[i], 20, 216 + i * 22, app->config.secondary);
+    Display_DrawText(&app->display, "USB inventory", 20, 178, app->config.primary);
+    for (int i = 0; i < state->usb_count && i < 4; ++i) {
+        Display_DrawTextClipped(&app->display, state->usb_lines[i], 20, 202 + i * 20, 436, app->config.secondary);
     }
-    Display_DrawText(&app->display, "read-only detection; no transmit functions", 20, 286, app->config.secondary);
+    Display_DrawText(&app->display, "inventory can include keyboard/hub", 20, 286, app->config.secondary);
 }
 
 Module Module_Rfcat_Create(void) {

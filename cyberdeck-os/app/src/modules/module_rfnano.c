@@ -25,11 +25,7 @@ static const char *status_text(const RfNanoData *state) {
     if (state->count > 0) {
         return "serial candidate detected";
     }
-    if (state->usb_count > 0 && strncmp(state->usb_lines[0], "No USB", 6) != 0 &&
-        strncmp(state->usb_lines[0], "USB inventory unavailable", 25) != 0) {
-        return "USB seen; no ttyUSB/ttyACM";
-    }
-    return "not detected";
+    return "no ttyUSB/ttyACM";
 }
 
 static bool rfnano_init(Module *module, App *app) {
@@ -62,13 +58,12 @@ static void rfnano_render(Module *module, App *app) {
         Renderer_LabelValue(&app->display, 20, 122 + i * 24, value, state->devices[i].path, app->config.secondary, app->config.accent);
     }
     if (state->count == 0 && state->usb_count > 0) {
-        Display_DrawText(&app->display, "USB inventory", 20, 190, app->config.primary);
-        for (int i = 0; i < state->usb_count && i < 3; ++i) {
-            Display_DrawText(&app->display, state->usb_lines[i], 20, 216 + i * 22, app->config.secondary);
+        Display_DrawText(&app->display, "USB inventory", 20, 170, app->config.primary);
+        for (int i = 0; i < state->usb_count && i < 4; ++i) {
+            Display_DrawTextClipped(&app->display, state->usb_lines[i], 20, 194 + i * 20, 436, app->config.secondary);
         }
     }
-    Display_DrawText(&app->display, "optional safe serial ping can be added here", 20, 262, app->config.secondary);
-    Display_DrawText(&app->display, "no packet injection or replay", 20, 286, app->config.secondary);
+    Display_DrawText(&app->display, "read-only detection", 20, 286, app->config.secondary);
 }
 
 Module Module_RfNano_Create(void) {

@@ -226,6 +226,30 @@ void Display_DrawText(Display *display, const char *text, int x, int y, Color co
     SDL_FreeSurface(surface);
 }
 
+void Display_DrawTextClipped(Display *display, const char *text, int x, int y, int max_w, Color color) {
+    if (!text || max_w <= 0 || !display->font) {
+        return;
+    }
+
+    char clipped[160];
+    snprintf(clipped, sizeof(clipped), "%s", text);
+
+    int text_w = 0;
+    int text_h = 0;
+    while (clipped[0] && TTF_SizeUTF8(display->font, clipped, &text_w, &text_h) == 0 && text_w > max_w) {
+        size_t length = strlen(clipped);
+        if (length <= 1) {
+            clipped[0] = '\0';
+            break;
+        }
+        clipped[length - 1] = '\0';
+    }
+
+    if (clipped[0]) {
+        Display_DrawText(display, clipped, x, y, color);
+    }
+}
+
 void Display_DrawRect(Display *display, int x, int y, int w, int h, Color color, bool filled) {
     SDL_Rect rect = {x, y, w, h};
     SDL_SetRenderDrawColor(display->renderer, color.r, color.g, color.b, color.a);
