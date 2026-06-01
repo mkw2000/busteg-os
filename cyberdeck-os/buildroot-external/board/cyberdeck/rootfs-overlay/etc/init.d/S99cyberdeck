@@ -20,6 +20,10 @@ show_debug_screen() {
     cat /proc/cmdline 2>/dev/null || true
     printf '\n\nframebuffer devices:\n'
     ls -l /dev/fb* 2>&1 || true
+    printf '\n\ninput devices:\n'
+    ls -l /dev/input 2>&1 || true
+    printf '\n\n/proc/bus/input/devices:\n'
+    cat /proc/bus/input/devices 2>&1 || true
     printf '\n\nbootsplash.log:\n'
     tail -n 8 /tmp/bootsplash.log 2>&1 || true
     printf '\n\nbootsplash-handoff.log:\n'

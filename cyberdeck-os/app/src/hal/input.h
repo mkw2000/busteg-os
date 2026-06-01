@@ -4,9 +4,13 @@
 #include <stdbool.h>
 #include "core/event_system.h"
 
+#define INPUT_MAX_EVENT_DEVICES 16
+
 typedef struct Input {
     int pointer_x;
     int pointer_y;
+    int event_fds[INPUT_MAX_EVENT_DEVICES];
+    int event_fd_count;
     bool pointer_down;
 } Input;
 

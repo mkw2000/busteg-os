@@ -108,6 +108,7 @@ bool Display_Init(Display *display, const Config *config) {
     }
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+    SDL_ShowCursor(SDL_DISABLE);
 
     Uint32 flags = SDL_WINDOW_SHOWN;
     if (display->fullscreen) {
