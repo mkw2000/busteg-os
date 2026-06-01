@@ -1,5 +1,5 @@
-build/modules/module_rfnano.o: src/modules/module_rfnano.c \
- src/modules/module_rfnano.h src/core/module_manager.h \
+build/modules/module_snake.o: src/modules/module_snake.c \
+ src/modules/module_snake.h src/core/module_manager.h \
  src/core/event_system.h src/core/app.h src/core/config.h \
  src/core/screen_manager.h src/hal/display.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
@@ -28,8 +28,8 @@ build/modules/module_rfnano.o: src/modules/module_rfnano.c \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
  /usr/include/SDL2/SDL_ttf.h /usr/include/SDL2/SDL.h src/hal/input.h \
- src/hal/serial.h src/hal/system.h src/ui/renderer.h
-src/modules/module_rfnano.h:
+ src/ui/renderer.h
+src/modules/module_snake.h:
 src/core/module_manager.h:
 src/core/event_system.h:
 src/core/app.h:
@@ -90,6 +90,4 @@ src/hal/display.h:
 /usr/include/SDL2/SDL_ttf.h:
 /usr/include/SDL2/SDL.h:
 src/hal/input.h:
-src/hal/serial.h:
-src/hal/system.h:
 src/ui/renderer.h:

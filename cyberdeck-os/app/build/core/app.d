@@ -28,8 +28,8 @@ build/core/app.o: src/core/app.c src/core/app.h src/core/config.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
  /usr/include/SDL2/SDL_ttf.h /usr/include/SDL2/SDL.h src/hal/input.h \
  src/modules/module_rfcat.h src/modules/module_rfnano.h \
- src/modules/module_settings.h src/modules/module_system.h \
- src/modules/module_touchtest.h
+ src/modules/module_settings.h src/modules/module_snake.h \
+ src/modules/module_system.h src/modules/module_touchtest.h
 src/core/app.h:
 src/core/config.h:
 src/core/event_system.h:
@@ -93,5 +93,6 @@ src/hal/input.h:
 src/modules/module_rfcat.h:
 src/modules/module_rfnano.h:
 src/modules/module_settings.h:
+src/modules/module_snake.h:
 src/modules/module_system.h:
 src/modules/module_touchtest.h:
