@@ -19,7 +19,7 @@ main
       +-- core/event_system     NAV_UP/DOWN/LEFT/RIGHT/SELECT/BACK/POINTER
       +-- hal/display           SDL2/SDL2_ttf hidden behind draw calls
       +-- hal/input             keyboard/mouse/touch mapped to nav events
-      +-- hal/serial            ttyUSB/ttyACM enumeration
+      +-- hal/serial            USB serial tty enumeration
       +-- hal/system            /proc, /sys, filesystem status
       +-- ui                    renderer, menu, widgets, theme helpers
 ```
@@ -227,4 +227,4 @@ The scripts are safe read-only helpers:
 ./scripts/detect_serial.sh
 ```
 
-`detect_usb.sh` reads `/sys/kernel/debug/usb/devices` when available or falls back to `lsusb`. `detect_serial.sh` lists `ttyUSB` and `ttyACM` devices.
+`detect_usb.sh` reads `/sys/kernel/debug/usb/devices` when available or falls back to `lsusb`. `detect_serial.sh` lists Linux and macOS USB serial tty devices.

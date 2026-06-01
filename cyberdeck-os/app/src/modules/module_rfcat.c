@@ -18,10 +18,33 @@ typedef struct RfcatData {
 
 static RfcatData data;
 
+typedef struct UsbId {
+    const char *vendor_id;
+    const char *product_id;
+} UsbId;
+
+static const UsbId rfcat_ids[] = {
+    {"0451", "4715"}, /* legacy cc1111usb */
+    {"1d50", "6047"}, /* RfCat Chronos */
+    {"1d50", "6048"}, /* RfCat Dons */
+    {"1d50", "605b"}, /* YARD Stick One */
+    {"1d50", "6049"}, /* Chronos bootloader */
+    {"1d50", "604a"}, /* Dons bootloader */
+    {"1d50", "605c"}  /* YARD Stick One bootloader */
+};
+
+static bool find_rfcat(char *label, size_t label_size) {
+    for (size_t i = 0; i < sizeof(rfcat_ids) / sizeof(rfcat_ids[0]); ++i) {
+        if (System_FindUsbId(rfcat_ids[i].vendor_id, rfcat_ids[i].product_id, label, label_size)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static void refresh(RfcatData *state) {
     state->serial_count = Serial_ListDevices(state->serial, 8);
-    state->rfcat_usb_present =
-        System_FindUsbId("1d50", "605b", state->rfcat_label, sizeof(state->rfcat_label));
+    state->rfcat_usb_present = find_rfcat(state->rfcat_label, sizeof(state->rfcat_label));
     state->usb_count = System_ListUsb(state->usb_lines, 8);
 }
 
